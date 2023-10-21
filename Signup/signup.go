@@ -44,7 +44,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Gagal menyimpan data ke MongoDB", http.StatusInternalServerError)
 				return
 			}
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/Login", http.StatusSeeOther)
 			return
 		}
 	}
