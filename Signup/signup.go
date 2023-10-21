@@ -37,7 +37,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Setelah sign-up berhasil, redirect ke halaman login atau halaman lain yang sesuai
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/Login", http.StatusSeeOther)
 			return
 		}
 	}
