@@ -25,5 +25,5 @@ func main() {
 	})
 
 	// Mulai server HTTP
-	http.ListenAndServe(":9000", nil)
+	http.ListenAndServe(":8989", nil)
 }
