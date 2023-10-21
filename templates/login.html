@@ -21,9 +21,13 @@
     </form>
 
     <!-- Tombol "Sign Up" -->
-    <div class="mt-3">
-        <a href="/Signup" class="btn btn-success">Sign Up</a>
-    </div>
-</div>
+    <button type="button" class="btn btn-success" id="signupButton">Sign Up</button>
+    <script>
+        document.getElementById("signupButton").addEventListener("click", function() {
+            // Redirect to the signup page
+            window.location.href = "/Signup";
+        });
+    </script>
+
 </body>
 </html>

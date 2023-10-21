@@ -2,8 +2,10 @@ package Signup
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 )
@@ -27,21 +29,43 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 
 		if username != "" && password != "" {
-			user := User{Username: username, Password: password}
+			// Cek apakah username sudah ada di database
+			if usernameExists(username) {
+				http.Error(w, "Username sudah digunakan, silakan coba username lain", http.StatusConflict)
+				return
+			}
+
+			// Hash the password using bcrypt
+			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+			if err != nil {
+				log.Printf("Gagal mengenkripsi kata sandi: %v", err)
+				http.Error(w, "Gagal menyimpan data ke MongoDB", http.StatusInternalServerError)
+				return
+			}
+
+			user := User{Username: username, Password: string(hashedPassword)}
 			collection := client.Database("InformasiWisataBandung").Collection("Users")
-			_, err := collection.InsertOne(context.Background(), user)
+			_, err = collection.InsertOne(context.Background(), user)
 			if err != nil {
 				log.Printf("Gagal menyimpan data ke MongoDB: %v", err)
 				http.Error(w, "Gagal menyimpan data ke MongoDB", http.StatusInternalServerError)
 				return
 			}
 
-			// Setelah sign-up berhasil, redirect ke halaman login atau halaman lain yang sesuai
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, "/template/login.html", http.StatusSeeOther)
 			return
 		}
 	}
 
-	// Jika metode bukan POST atau data tidak valid, tampilkan halaman sign-up
 	http.ServeFile(w, r, "templates/signup.html")
+}
+
+// Function to check if username exists in the database
+func usernameExists(username string) bool {
+	collection := client.Database("InformasiWisataBandung").Collection("Users")
+	filter := bson.M{"username": username}
+
+	var user User
+	err := collection.FindOne(context.Background(), filter).Decode(&user)
+	return err == nil
 }

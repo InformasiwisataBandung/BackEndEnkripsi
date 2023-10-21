@@ -2,11 +2,12 @@ package Login
 
 import (
 	"context"
+	"fmt"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
@@ -16,7 +17,13 @@ type User struct {
 }
 
 var Privatekey = "56e4eb16f428e82cea21e5bceed2b078c0955ce1b8509631369dab20e1a952180a9ea5fae87b3895fba98c2b138c336ccfba886b0823fd774415ccc9394ae159"
+var client *mongo.Client
 
+func init() {
+	// Inisialisasi koneksi MongoDB
+	clientOptions := options.Client().ApplyURI("mongodb+srv://MigrasiData:Salman123456.@cluster0.ot8qmry.mongodb.net/")
+	client, _ = mongo.Connect(context.Background(), clientOptions)
+}
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Metode tidak diizinkan", http.StatusMethodNotAllowed)
@@ -26,43 +33,45 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	if checkCredentials(username, password) {
-		// inpo kalo login berhasil mendapatkan token
-		tokenString, err := watoken.Encode(username, Privatekey)
-		if err != nil {
-			http.Error(w, "Gagal menghasilkan token", http.StatusInternalServerError)
-			return
-		}
-		// Kirim token sebagai respons
-		w.Write([]byte(tokenString))
-	} else {
-		// Login gagal
-		http.Error(w, "Login gagal", http.StatusUnauthorized)
+	// Retrieve hashed password from MongoDB based on the username
+	hashedPassword, err := getHashedPassword(username)
+	if err != nil {
+		http.Error(w, "Gagal mencari kredensial", http.StatusUnauthorized)
+		return
 	}
+
+	// Compare the provided password with the hashed password
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+		http.Error(w, "Login gagal", http.StatusUnauthorized)
+		return
+	}
+
+	// If login is successful, generate a PASETO token
+	tokenstring, _ := watoken.Encode(username, Privatekey)
+	w.Write([]byte(tokenstring))
 }
 
-func checkCredentials(username, password string) bool {
-	clientOptions := options.Client().ApplyURI("mongodb+srv://MigrasiData:Salman123456.@cluster0.ot8qmry.mongodb.net/")
-	client, err := mongo.Connect(context.Background(), clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+// Function to retrieve hashed password from MongoDB
+// Function to retrieve hashed password from MongoDB
+func getHashedPassword(username string) (string, error) {
+	// Mendapatkan koneksi ke koleksi Users di database MongoDB
 	collection := client.Database("InformasiWisataBandung").Collection("Users")
-	var result User
-	err = collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&result)
+
+	// Mencari dokumen berdasarkan username
+	filter := bson.M{"username": username}
+	var user User
+
+	err := collection.FindOne(context.Background(), filter).Decode(&user)
 	if err != nil {
-		// Tangani kesalahan dan kembalikan false jika kredensial tidak ditemukan
-		log.Printf("Gagal mencari kredensial: %v", err)
-		return false
+		// Tangani kesalahan, termasuk jika pengguna tidak ditemukan.
+		if err == mongo.ErrNoDocuments {
+			// Jika pengguna tidak ditemukan, kembalikan pesan kesalahan yang sesuai.
+			return "", fmt.Errorf("Pengguna dengan username %s tidak ditemukan", username)
+		}
+		// Jika terjadi kesalahan lain, kembalikan pesan kesalahan.
+		return "", err
 	}
 
-	// Periksa apakah password cocok dengan yang ada di MongoDB
-	if result.Password == password {
-		// Kredensial sesuai, maka kembalikan true
-		return true
-	}
-
-	// Password tidak cocok, kembalikan false
-	return false
+	// Mengembalikan kata sandi terenkripsi dari dokumen pengguna yang sesuai
+	return user.Password, nil
 }
