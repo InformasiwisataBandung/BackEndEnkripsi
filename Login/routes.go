@@ -5,5 +5,5 @@ import (
 )
 
 func RegisterLoginRoutes() {
-	http.HandleFunc("/login", LoginHandler)
+	http.HandleFunc("/Login", LoginHandler)
 }

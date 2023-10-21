@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 )
@@ -27,45 +26,43 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	// Retrieve hashed password from MongoDB based on the username
-	hashedPassword, err := getHashedPassword(username)
-	if err != nil {
-		http.Error(w, "Gagal mencari kredensial", http.StatusUnauthorized)
-		return
-	}
-
-	// Compare the provided password with the hashed password
-	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+	if checkCredentials(username, password) {
+		// inpo kalo login berhasil mendapatkan token
+		tokenString, err := watoken.Encode(username, Privatekey)
+		if err != nil {
+			http.Error(w, "Gagal menghasilkan token", http.StatusInternalServerError)
+			return
+		}
+		// Kirim token sebagai respons
+		w.Write([]byte(tokenString))
+	} else {
+		// Login gagal
 		http.Error(w, "Login gagal", http.StatusUnauthorized)
-		return
 	}
-
-	// If login is successful, generate a PASETO token
-	tokenstring, _ := watoken.Encode(username, Privatekey)
-	w.Write([]byte(tokenstring))
 }
-func getHashedPassword(username string) (string, error) {
-	// Koneksi ke MongoDB
+
+func checkCredentials(username, password string) bool {
 	clientOptions := options.Client().ApplyURI("mongodb+srv://MigrasiData:Salman123456.@cluster0.ot8qmry.mongodb.net/")
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
-		return "", err
 	}
 
-	// Koneksikan ke koleksi "Users" di database "InformasiWisataBandung"
 	collection := client.Database("InformasiWisataBandung").Collection("Users")
-
-	// Lakukan query untuk mendapatkan dokumen dengan username yang sesuai
 	var result User
-	filter := bson.M{"username": username}
-	err = collection.FindOne(context.Background(), filter).Decode(&result)
+	err = collection.FindOne(context.Background(), bson.M{"username": username}).Decode(&result)
 	if err != nil {
-		// Handle error, misalnya jika dokumen tidak ditemukan
+		// Tangani kesalahan dan kembalikan false jika kredensial tidak ditemukan
 		log.Printf("Gagal mencari kredensial: %v", err)
-		return "", err
+		return false
 	}
 
-	// Kembalikan kata sandi terenkripsi dari dokumen yang sesuai
-	return result.Password, nil
+	// Periksa apakah password cocok dengan yang ada di MongoDB
+	if result.Password == password {
+		// Kredensial sesuai, maka kembalikan true
+		return true
+	}
+
+	// Password tidak cocok, kembalikan false
+	return false
 }
