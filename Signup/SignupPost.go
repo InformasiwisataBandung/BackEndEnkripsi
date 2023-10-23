@@ -42,7 +42,7 @@ func GCFPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func init() {
 	ctx := context.Background()
-	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/ignup", GCFPostHandler); err != nil {
+	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/Signup", GCFPostHandler); err != nil {
 		log.Fatalf("funcframework.RegisterHTTPFunctionContext: %v", err)
 	}
 }
