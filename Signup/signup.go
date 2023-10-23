@@ -55,6 +55,11 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/template/login.html", http.StatusSeeOther)
 			return
 		}
+	} else if r.Method == http.MethodGet {
+		// Tampilkan formulir pendaftaran untuk metode GET
+		http.ServeFile(w, r, "templates/signup.html")
+	} else {
+		http.Error(w, "Metode tidak diizinkan", http.StatusMethodNotAllowed)
 	}
 
 	http.ServeFile(w, r, "templates/signup.html")

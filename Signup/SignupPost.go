@@ -3,10 +3,9 @@ package Signup
 import (
 	"context"
 	"encoding/json"
+	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 	"log"
 	"net/http"
-
-	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 )
 
 type SignupPayload struct {
