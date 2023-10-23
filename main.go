@@ -4,6 +4,7 @@ import (
 	"github.com/InformasiwisataBandung/BackEndEnkripsi/Controller"
 	"github.com/InformasiwisataBandung/BackEndEnkripsi/Login"
 	"github.com/InformasiwisataBandung/BackEndEnkripsi/Signup"
+
 	"net/http"
 )
 
@@ -14,7 +15,7 @@ func main() {
 	Login.RegisterLoginRoutes()
 	// Mendaftarkan rute HTTP dari package signup
 	http.HandleFunc("/Signup", Signup.SignupHandler)
-
+	//Mendaftarkan Fungsi GCF
 	// Melayani form login
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {

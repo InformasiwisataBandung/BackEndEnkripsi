@@ -47,8 +47,23 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If login is successful, generate a PASETO token
-	tokenstring, _ := watoken.Encode(username, Privatekey)
-	w.Write([]byte(tokenstring))
+	tokenString, _ := watoken.Encode(username, Privatekey)
+
+	// Set the token as a cookie
+	cookie := http.Cookie{
+		Name:     "token",     // Nama cookie
+		Value:    tokenString, // Token sebagai nilai cookie
+		HttpOnly: true,        // Hanya bisa diakses melalui HTTP
+		Path:     "/",         // Path di mana cookie berlaku (misalnya, seluruh situs)
+		MaxAge:   3600,        // Durasi cookie (dalam detik), sesuaikan sesuai kebutuhan
+		// Secure: true, // Jika situs dijalankan melalui HTTPS
+	}
+
+	http.SetCookie(w, &cookie) // Set cookie dalam respons
+
+	// Redirect atau respons sesuai dengan kebutuhan Anda setelah login berhasil.
+	// Contoh: Redirect ke halaman utama
+	http.Redirect(w, r, "/halaman-utama", http.StatusSeeOther)
 }
 
 // Function to retrieve hashed password from MongoDB
