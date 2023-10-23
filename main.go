@@ -4,11 +4,11 @@ import (
 	"github.com/InformasiwisataBandung/BackEndEnkripsi/Controller"
 	"github.com/InformasiwisataBandung/BackEndEnkripsi/Login"
 	"github.com/InformasiwisataBandung/BackEndEnkripsi/Signup"
-
 	"net/http"
 )
 
 func main() {
+
 	Controller.Auth()
 	// Menghubungkan rute HTTP dari package login
 	// Mendaftarkan rute HTTP dari package login
