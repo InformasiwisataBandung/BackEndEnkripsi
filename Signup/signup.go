@@ -15,8 +15,6 @@ type User struct {
 	Password string `json:"password"`
 }
 
-var client *mongo.Client
-
 func init() {
 	// Inisialisasi koneksi MongoDB
 	clientOptions := options.Client().ApplyURI("mongodb+srv://MigrasiData:Salman123456.@cluster0.ot8qmry.mongodb.net/")

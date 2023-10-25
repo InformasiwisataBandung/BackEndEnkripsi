@@ -7,6 +7,7 @@ require (
 	github.com/whatsauth/watoken v0.1.2
 	go.mongodb.org/mongo-driver v1.12.1
 	golang.org/x/crypto v0.14.0
+
 )
 
 require (
