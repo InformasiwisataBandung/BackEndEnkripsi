@@ -2,6 +2,7 @@ package Login
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/whatsauth/watoken"
 	"go.mongodb.org/mongo-driver/bson"
@@ -61,9 +62,18 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookie) // Set cookie dalam respons
 
-	// Redirect atau respons sesuai dengan kebutuhan Anda setelah login berhasil.
-	// Contoh: Redirect ke halaman utama
-	http.Redirect(w, r, "/halaman-utama", http.StatusSeeOther)
+	// Prepare JSON response
+	response := map[string]interface{}{
+		"message":  "Login berhasil",
+		"token":    tokenString,
+		"username": username,
+		// It's not recommended to include the password in the response
+	}
+
+	// Send JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 // Function to retrieve hashed password from MongoDB
