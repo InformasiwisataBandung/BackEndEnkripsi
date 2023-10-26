@@ -7,8 +7,12 @@ import (
 	"net/http"
 )
 
+func EntryPoint(w http.ResponseWriter, r *http.Request) {
+	Login.LoginHandler(w, r)
+}
+
 func main() {
-	http.HandleFunc("/", SigninHandler)
+	http.HandleFunc("/", EntryPoint)
 
 	Controller.Auth()
 	// Menghubungkan rute HTTP dari package login
