@@ -7,13 +7,12 @@ import (
 	"net/http"
 )
 
-func EntryPoint(w http.ResponseWriter, r *http.Request) {
+func LoginHandlerGCF(w http.ResponseWriter, r *http.Request) {
 	Login.LoginHandler(w, r)
 }
 
 func main() {
-	http.HandleFunc("/", EntryPoint)
-
+	http.HandleFunc("/", LoginHandlerGCF)
 	Controller.Auth()
 	// Menghubungkan rute HTTP dari package login
 	// Mendaftarkan rute HTTP dari package login
