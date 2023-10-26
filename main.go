@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	http.HandleFunc("/", SigninHandler)
 
 	Controller.Auth()
 	// Menghubungkan rute HTTP dari package login
