@@ -7,14 +7,18 @@ import (
 	"net/http"
 )
 
-func main() {
+func LoginHandlerGCF(w http.ResponseWriter, r *http.Request) {
+	Login.LoginHandler(w, r)
+}
 
+func main() {
+	http.HandleFunc("/", LoginHandlerGCF)
 	Controller.Auth()
 	// Menghubungkan rute HTTP dari package login
 	// Mendaftarkan rute HTTP dari package login
-	Login.RegisterLoginRoutes()
 	// Mendaftarkan rute HTTP dari package signup
 	http.HandleFunc("/Signup", Signup.SignupHandler)
+	Login.RegisterLoginRoutes()
 	//Mendaftarkan Fungsi GCF
 	// Melayani form login
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
