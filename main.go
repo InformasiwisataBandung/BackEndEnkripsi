@@ -7,8 +7,15 @@ import (
 	"net/http"
 )
 
-func main() {
+func LoginHandlerGCF(w http.ResponseWriter, r *http.Request) {
+	Login.LoginHandler(w, r)
+}
 
+func EntryPoint(w http.ResponseWriter, r *http.Request) {
+	Login.LoginHandler(w, r)
+}
+func main() {
+	http.HandleFunc("/", EntryPoint)
 	Controller.Auth()
 	// Menghubungkan rute HTTP dari package login
 	// Mendaftarkan rute HTTP dari package login
@@ -17,13 +24,6 @@ func main() {
 	Login.RegisterLoginRoutes()
 	//Mendaftarkan Fungsi GCF
 	// Melayani form login
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet {
-			http.ServeFile(w, r, "templates/login.html")
-		} else {
-			http.Error(w, "Metode tidak diizinkancoy", http.StatusMethodNotAllowed)
-		}
-	})
 
 	// Mulai server HTTP
 	http.ListenAndServe(":8989", nil)
